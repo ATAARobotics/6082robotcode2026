@@ -58,7 +58,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
-    return runOnce(
+    return run(
         () -> {
           differentialDrive.arcadeDrive(x.getAsDouble(), y.getAsDouble());
         });
