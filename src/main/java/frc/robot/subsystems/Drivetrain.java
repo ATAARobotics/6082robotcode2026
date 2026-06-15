@@ -4,19 +4,17 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
   private SparkMax frontLeft;
@@ -47,10 +45,14 @@ public class Drivetrain extends SubsystemBase {
     SparkMaxConfig backRightConfig = new SparkMaxConfig();
     backRightConfig.idleMode(IdleMode.kBrake);
 
-    frontLeft.configure(frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    backLeft.configure(backLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    frontRight.configure(frontRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    backRight.configure(backRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    frontLeft.configure(
+        frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    backLeft.configure(
+        backLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    frontRight.configure(
+        frontRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    backRight.configure(
+        backRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     differentialDrive = new DifferentialDrive(backLeft, backRight);
   }
