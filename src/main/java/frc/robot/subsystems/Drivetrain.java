@@ -60,7 +60,10 @@ public class Drivetrain extends SubsystemBase {
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
     return run(
         () -> {
-          differentialDrive.arcadeDrive(x.getAsDouble(), y.getAsDouble());
+          differentialDrive.arcadeDrive(
+            x.getAsDouble() ^ Constants.DrivetrainConstants.kDriveSmoothing,
+            y.getAsDouble() ^ Constants.DrivetrainConstants.kTurnSmoothing
+          );
         });
   }
 

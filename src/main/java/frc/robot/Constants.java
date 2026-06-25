@@ -22,5 +22,8 @@ public final class Constants {
     public static final int BackLeftId = 11;
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
+
+    public static final int kDriveSmoothing = 4;
+    public static final int kTurnSmoothing = 4;
   }
 }
