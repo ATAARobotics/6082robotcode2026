@@ -25,8 +25,10 @@ public class Drivetrain extends SubsystemBase {
 
   private DifferentialDrive differentialDrive;
 
-  private SlewRateLimiter driveFilter = new SlewRateLimiter(0.5);
-  private SlewRateLimiter turnFilter = new SlewRateLimiter(0.3);
+  private SlewRateLimiter driveFilter =
+      new SlewRateLimiter(Constants.DrivetrainConstants.kDriveSlewRate);
+  private SlewRateLimiter turnFilter =
+      new SlewRateLimiter(Constants.DrivetrainConstants.kTurnSlewRate);
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
