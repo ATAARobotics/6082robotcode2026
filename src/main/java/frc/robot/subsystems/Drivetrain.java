@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,6 +24,9 @@ public class Drivetrain extends SubsystemBase {
   private SparkMax backRight;
 
   private DifferentialDrive differentialDrive;
+
+  private SlewRateLimiter driveFilter = new SlewRateLimiter(0.5);
+  private SlewRateLimiter turnFilter = new SlewRateLimiter(0.3);
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -60,7 +64,8 @@ public class Drivetrain extends SubsystemBase {
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
     return run(
         () -> {
-          differentialDrive.arcadeDrive(x.getAsDouble(), y.getAsDouble());
+          differentialDrive.arcadeDrive(
+              driveFilter.calculate(x.getAsDouble()), turnFilter.calculate(y.getAsDouble()));
         });
   }
 
