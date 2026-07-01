@@ -23,7 +23,9 @@ public final class Constants {
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
 
-    public static final double kDriveSlewRate = 0.5;
-    public static final double kTurnSlewRate = 0.3;
+    public static final double kDriveMaxRatePerSec = 44.0;
+    public static final double kDriveCurveExponent = 3.0;
+    public static final double kTurnMaxRatePerSec = 40.0;
+    public static final double kTurnCurveExponent = 4.0;
   }
 }

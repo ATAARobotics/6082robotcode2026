@@ -10,11 +10,11 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.util.AccelerationLimiter;
 import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
@@ -25,10 +25,14 @@ public class Drivetrain extends SubsystemBase {
 
   private DifferentialDrive differentialDrive;
 
-  private SlewRateLimiter driveFilter =
-      new SlewRateLimiter(Constants.DrivetrainConstants.kDriveSlewRate);
-  private SlewRateLimiter turnFilter =
-      new SlewRateLimiter(Constants.DrivetrainConstants.kTurnSlewRate);
+  private AccelerationLimiter driveLimiter =
+      new AccelerationLimiter(
+          Constants.DrivetrainConstants.kDriveMaxRatePerSec,
+          Constants.DrivetrainConstants.kDriveCurveExponent);
+  private AccelerationLimiter turnLimiter =
+      new AccelerationLimiter(
+          Constants.DrivetrainConstants.kTurnMaxRatePerSec,
+          Constants.DrivetrainConstants.kTurnCurveExponent);
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -66,9 +70,15 @@ public class Drivetrain extends SubsystemBase {
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
     return run(
         () -> {
-          differentialDrive.arcadeDrive(
-              driveFilter.calculate(x.getAsDouble()), turnFilter.calculate(y.getAsDouble()));
+          double forward = driveLimiter.calculate(y.getAsDouble());
+          double turn = turnLimiter.calculate(x.getAsDouble());
+          differentialDrive.arcadeDrive(forward, turn);
         });
+  }
+
+  public void resetAccelerationLimiters() {
+    driveLimiter.reset();
+    turnLimiter.reset();
   }
 
   @Override

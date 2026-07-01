@@ -42,7 +42,9 @@ public class RobotContainer {
    */
   private void configureBindings() {
     drivetrain.setDefaultCommand(
-        drivetrain.arcadeDrive(m_driverController::getLeftX, m_driverController::getLeftY));
+        drivetrain
+            .arcadeDrive(m_driverController::getLeftX, m_driverController::getLeftY)
+            .beforeStarting(drivetrain::resetAccelerationLimiters));
   }
 
   /**
