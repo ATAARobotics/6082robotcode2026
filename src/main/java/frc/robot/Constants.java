@@ -23,9 +23,18 @@ public final class Constants {
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
 
+    // Peak rate (units/sec) for the drive (throttle) acceleration limiter.
     public static final double kDriveMaxRatePerSec = 44.0;
+
+    // Power-curve exponent for the drive limiter. Higher = punchier start, softer finish.
+    // With the values above, 0 -> 0.6 takes ~1 tick and 0.6 -> 0.85 takes ~0.5s.
     public static final double kDriveCurveExponent = 3.0;
+
+    // Peak rate (units/sec) for the turn (rotation) acceleration limiter.
     public static final double kTurnMaxRatePerSec = 40.0;
+
+    // Power-curve exponent for the turn limiter. Higher = punchier start, softer finish.
+    // With the values above, 0 -> 0.5 takes ~1 tick and 0.5 -> 0.75 takes ~0.5s.
     public static final double kTurnCurveExponent = 4.0;
   }
 }
