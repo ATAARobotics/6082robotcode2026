@@ -4,14 +4,6 @@
 
 package frc.robot;
 
-/**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
- * globally (i.e. public static). Do not put anything functional in this class.
- *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
- * constants are needed, to reduce verbosity.
- */
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
@@ -23,18 +15,22 @@ public final class Constants {
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
 
-    // Peak rate (units/sec) for the drive (throttle) acceleration limiter.
-    public static final double kDriveMaxRatePerSec = 44.0;
+    // Max acceleration per second for the drive limiter.
+    public static final double kDriveMaxRatePerSec = 8.0;
 
-    // Power-curve exponent for the drive limiter. Higher = punchier start, softer finish.
-    // With the values above, 0 -> 0.6 takes ~1 tick and 0.6 -> 0.85 takes ~0.5s.
-    public static final double kDriveCurveExponent = 3.0;
+    // Power-curve exponent for the drive limiter.
+    public static final double kDriveCurveExponent = 3.5;
 
-    // Peak rate (units/sec) for the turn (rotation) acceleration limiter.
-    public static final double kTurnMaxRatePerSec = 40.0;
+    // Maximum power for drive
+    public static final double kDriveMaxPower = 0.5;
 
-    // Power-curve exponent for the turn limiter. Higher = punchier start, softer finish.
-    // With the values above, 0 -> 0.5 takes ~1 tick and 0.5 -> 0.75 takes ~0.5s.
-    public static final double kTurnCurveExponent = 4.0;
+    // Max acceleration per second for the turn limiter.
+    public static final double kTurnMaxRatePerSec = 8.0;
+    
+    // Power-curve exponent for the turn limiter.
+    public static final double kTurnCurveExponent = 4.5;
+
+    // Maximum power for turn
+    public static final double kTurnMaxPower = 0.5;
   }
 }

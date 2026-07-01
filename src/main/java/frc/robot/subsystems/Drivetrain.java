@@ -70,8 +70,11 @@ public class Drivetrain extends SubsystemBase {
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
     return run(
         () -> {
-          double forward = driveLimiter.calculate(y.getAsDouble());
-          double turn = turnLimiter.calculate(x.getAsDouble());
+          double limitedDrive = driveLimiter.calculate(y.getAsDouble());
+          double limitedTurn = turnLimiter.calculate(x.getAsDouble());
+
+          double forward = Math.clamp(limitedDrive, -Constants.DrivetrainConstants.kDriveMaxPower, Constants.DrivetrainConstants.kDriveMaxPower);
+          double turn = Math.clamp(limitedTurn, -Constants.DrivetrainConstants.kTurnMaxPower, Constants.DrivetrainConstants.kTurnMaxPower);
           differentialDrive.arcadeDrive(forward, turn);
         });
   }
