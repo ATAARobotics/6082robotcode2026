@@ -16,21 +16,21 @@ public final class Constants {
     public static final int BackRightId = 13;
 
     // Max acceleration per second for the drive limiter.
-    public static final double kDriveMaxRatePerSec = 8.0;
+    public static final double kDriveMaxRatePerSec = 16.0;
 
     // Power-curve exponent for the drive limiter.
     public static final double kDriveCurveExponent = 3.5;
 
     // Maximum power for drive
-    public static final double kDriveMaxPower = 0.5;
+    public static final double kDriveMaxPower = 0.8;
 
     // Max acceleration per second for the turn limiter.
-    public static final double kTurnMaxRatePerSec = 8.0;
-    
+    public static final double kTurnMaxRatePerSec = 16.0;
+
     // Power-curve exponent for the turn limiter.
     public static final double kTurnCurveExponent = 4.5;
 
     // Maximum power for turn
-    public static final double kTurnMaxPower = 0.5;
+    public static final double kTurnMaxPower = 0.8;
   }
 }
