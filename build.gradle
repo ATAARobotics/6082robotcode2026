@@ -118,7 +118,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/bin/**'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**', '**/util/LimelightHelpers.java'
         }
         toggleOffOn()
         googleJavaFormat()
