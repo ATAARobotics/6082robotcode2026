@@ -94,6 +94,15 @@ public class Drivetrain extends SubsystemBase {
     rightEncoder = backRight.getEncoder();
 
     SmartDashboard.putData("Field", m_field);
+
+    LimelightHelpers.setCameraPose_RobotSpace(
+        Constants.VisionConstants.kLimelightName,
+        Constants.VisionConstants.kCameraForwardMeters,
+        Constants.VisionConstants.kCameraSideMeters,
+        Constants.VisionConstants.kCameraUpMeters,
+        Constants.VisionConstants.kCameraRollDegrees,
+        Constants.VisionConstants.kCameraPitchDegrees,
+        Constants.VisionConstants.kCameraYawDegrees);
   }
 
   public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {

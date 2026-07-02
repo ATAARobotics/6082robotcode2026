@@ -33,6 +33,18 @@ public final class Constants {
     public static final double kMetersPerRotation = 0.0566;
   }
 
+  public static class VisionConstants {
+    public static final String kLimelightName = "limelight";
+
+    public static final double kCameraForwardMeters = 0.0;
+    public static final double kCameraSideMeters = 0.0;
+    public static final double kCameraUpMeters = 0.0;
+
+    public static final double kCameraRollDegrees = 0.0;
+    public static final double kCameraPitchDegrees = 0.0;
+    public static final double kCameraYawDegrees = 0.0;
+  }
+
   public static class StartPoses {
     public static final Pose2d kBlueStart1 = new Pose2d(0.0, 0.0, new Rotation2d());
     public static final Pose2d kBlueStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
