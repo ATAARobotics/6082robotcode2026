@@ -6,17 +6,18 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -35,13 +36,17 @@ public class Drivetrain extends SubsystemBase {
   private SparkMax frontRight;
   private SparkMax backRight;
 
+  private RelativeEncoder leftEncoder;
+  private RelativeEncoder rightEncoder;
+
   private DifferentialDrive differentialDrive;
 
   private final Pigeon2 pigeon = new Pigeon2(20);
-  private DifferentialDriveKinematics m_kinematics =
-      new DifferentialDriveKinematics(Units.inchesToMeters(24.5));
-  private DifferentialDrivePoseEstimator pose =
-      new DifferentialDrivePoseEstimator(m_kinematics, pigeon.getRotation2d(), 0, 0, new Pose2d());
+  private final DifferentialDriveKinematics m_kinematics =
+      new DifferentialDriveKinematics(Constants.DrivetrainConstants.kTrackWidthMeters);
+  private final DifferentialDrivePoseEstimator3d poseEstimator =
+      new DifferentialDrivePoseEstimator3d(
+          m_kinematics, pigeon.getRotation3d(), 0, 0, new Pose3d());
 
   private final Field2d m_field = new Field2d();
 
@@ -58,6 +63,10 @@ public class Drivetrain extends SubsystemBase {
 
     SparkMaxConfig backLeftConfig = new SparkMaxConfig();
     backLeftConfig.idleMode(IdleMode.kBrake);
+    backLeftConfig.encoder.positionConversionFactor(
+        Constants.DrivetrainConstants.kMetersPerRotation);
+    backLeftConfig.encoder.velocityConversionFactor(
+        Constants.DrivetrainConstants.kMetersPerRotation / 60.0);
 
     SparkMaxConfig frontRightConfig = new SparkMaxConfig();
     frontRightConfig.follow(Constants.DrivetrainConstants.BackRightId, false);
@@ -65,6 +74,10 @@ public class Drivetrain extends SubsystemBase {
 
     SparkMaxConfig backRightConfig = new SparkMaxConfig();
     backRightConfig.idleMode(IdleMode.kBrake);
+    backRightConfig.encoder.positionConversionFactor(
+        Constants.DrivetrainConstants.kMetersPerRotation);
+    backRightConfig.encoder.velocityConversionFactor(
+        Constants.DrivetrainConstants.kMetersPerRotation / 60.0);
 
     frontLeft.configure(
         frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -77,6 +90,9 @@ public class Drivetrain extends SubsystemBase {
 
     differentialDrive = new DifferentialDrive(backLeft, backRight);
 
+    leftEncoder = backLeft.getEncoder();
+    rightEncoder = backRight.getEncoder();
+
     SmartDashboard.putData("Field", m_field);
   }
 
@@ -87,23 +103,39 @@ public class Drivetrain extends SubsystemBase {
         });
   }
 
+  public Pose2d getPose() {
+    return poseEstimator.getEstimatedPosition().toPose2d();
+  }
+
+  public void resetPose(Pose2d pose) {
+    poseEstimator.resetPosition(pigeon.getRotation3d(), 0, 0, new Pose3d(pose));
+  }
+
+  public void zeroHeading() {
+    pigeon.setYaw(0);
+    poseEstimator.resetRotation(new Rotation3d());
+  }
+
   @Override
   public void periodic() {
     boolean doRejectUpdate = false;
 
     LimelightHelpers.SetRobotOrientation(
-        "limelight", pose.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        "limelight",
+        poseEstimator.getEstimatedPosition().getRotation().getZ() * (180.0 / Math.PI),
+        pigeon.getAngularVelocityZDevice().getValueAsDouble(),
+        pigeon.getPitch().getValueAsDouble(),
+        pigeon.getRoll().getValueAsDouble(),
+        pigeon.getAngularVelocityYDevice().getValueAsDouble(),
+        pigeon.getAngularVelocityXDevice().getValueAsDouble());
 
     Optional<Alliance> ally = DriverStation.getAlliance();
 
     LimelightHelpers.PoseEstimate mt2;
-    Pose3d botPose3d;
     if (ally.isPresent() && ally.get() == Alliance.Red) {
       mt2 = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
-      botPose3d = LimelightHelpers.getBotPose3d_wpiRed("limelight");
     } else {
       mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-      botPose3d = LimelightHelpers.getBotPose3d_wpiBlue("limelight");
     }
 
     if (Math.abs(pigeon.getAngularVelocityZDevice().getValueAsDouble()) > 720) {
@@ -114,17 +146,22 @@ public class Drivetrain extends SubsystemBase {
       doRejectUpdate = true;
     }
 
+    poseEstimator.update(
+        pigeon.getRotation3d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+
     if (!doRejectUpdate) {
-      pose.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-      pose.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
+      poseEstimator.addVisionMeasurement(new Pose3d(mt2.pose), mt2.timestampSeconds);
     }
 
-    m_field.setRobotPose(pose.getEstimatedPosition());
+    Pose3d currentPose = poseEstimator.getEstimatedPosition();
 
-    SmartDashboard.putNumber("Drivetrain/X", pose.getEstimatedPosition().getX());
-    SmartDashboard.putNumber("Drivetrain/Y", pose.getEstimatedPosition().getY());
-    SmartDashboard.putNumber("Drivetrain/Z", botPose3d.getZ());
-    SmartDashboard.putNumber("Drivetrain/Yaw", botPose3d.getRotation().getZ());
+    m_field.setRobotPose(currentPose.toPose2d());
+
+    SmartDashboard.putNumber("Drivetrain/X", currentPose.getX());
+    SmartDashboard.putNumber("Drivetrain/Y", currentPose.getY());
+    SmartDashboard.putNumber("Drivetrain/Z", currentPose.getZ());
+    SmartDashboard.putNumber("Drivetrain/Yaw", currentPose.getRotation().getZ());
     SmartDashboard.putNumber("Drivetrain/Pitch", pigeon.getPitch().getValueAsDouble());
     SmartDashboard.putNumber("Drivetrain/Roll", pigeon.getRoll().getValueAsDouble());
     SmartDashboard.putNumber(

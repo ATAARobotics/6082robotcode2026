@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -22,5 +26,19 @@ public final class Constants {
     public static final int BackLeftId = 11;
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
+
+    public static final double kTrackWidthMeters = Units.inchesToMeters(24.5);
+
+    // meters per motor rotation = wheelDiameterMeters * Math.PI / gearRatio
+    public static final double kMetersPerRotation = 0.0566;
+  }
+
+  public static class StartPoses {
+    public static final Pose2d kBlueStart1 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d kBlueStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d kBlueStart3 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d kRedStart1 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d kRedStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d kRedStart3 = new Pose2d(0.0, 0.0, new Rotation2d());
   }
 }
