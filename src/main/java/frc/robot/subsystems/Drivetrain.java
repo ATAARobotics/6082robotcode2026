@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems;
 
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
@@ -12,14 +15,13 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,8 +29,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.LimelightHelpers;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
   private SparkMax frontLeft;
@@ -138,14 +138,8 @@ public class Drivetrain extends SubsystemBase {
         pigeon.getAngularVelocityYDevice().getValueAsDouble(),
         pigeon.getAngularVelocityXDevice().getValueAsDouble());
 
-    Optional<Alliance> ally = DriverStation.getAlliance();
-
     LimelightHelpers.PoseEstimate mt2;
-    if (ally.isPresent() && ally.get() == Alliance.Red) {
-      mt2 = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
-    } else {
-      mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-    }
+    mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
 
     if (Math.abs(pigeon.getAngularVelocityZDevice().getValueAsDouble()) > 720) {
       doRejectUpdate = true;
@@ -156,7 +150,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     poseEstimator.update(
-        pigeon.getRotation3d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+        pigeon.getRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
 
     if (!doRejectUpdate) {
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
@@ -175,6 +169,8 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Drivetrain/Roll", pigeon.getRoll().getValueAsDouble());
     SmartDashboard.putNumber(
         "Drivetrain/Velocity", pigeon.getAngularVelocityZDevice().getValueAsDouble());
+    SmartDashboard.putNumber("Drivetrain/LeftBackEncoder", leftEncoder.getPosition());
+    SmartDashboard.putNumber("Drivetrain/RightBackEncoder", -rightEncoder.getPosition());
   }
 
   @Override

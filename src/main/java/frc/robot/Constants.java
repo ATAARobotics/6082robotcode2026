@@ -30,7 +30,7 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(24.5);
 
     // meters per motor rotation = wheelDiameterMeters * Math.PI / gearRatio
-    public static final double kMetersPerRotation = 0.0566;
+    public static final double kMetersPerRotation = 0.04849963145726829;
   }
 
   public static class VisionConstants {
