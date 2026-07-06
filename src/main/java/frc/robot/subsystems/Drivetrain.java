@@ -27,12 +27,12 @@ public class Drivetrain extends SubsystemBase {
 
   private AccelerationLimiter driveLimiter =
       new AccelerationLimiter(
-          Constants.DrivetrainConstants.kDriveMaxRatePerSec,
-          Constants.DrivetrainConstants.kDriveCurveExponent);
+          Constants.DrivetrainConstants.driveMaxRatePerSec,
+          Constants.DrivetrainConstants.driveCurveExponent);
   private AccelerationLimiter turnLimiter =
       new AccelerationLimiter(
-          Constants.DrivetrainConstants.kTurnMaxRatePerSec,
-          Constants.DrivetrainConstants.kTurnCurveExponent);
+          Constants.DrivetrainConstants.turnMaxRatePerSec,
+          Constants.DrivetrainConstants.turnCurveExponent);
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -67,20 +67,20 @@ public class Drivetrain extends SubsystemBase {
     differentialDrive = new DifferentialDrive(backLeft, backRight);
   }
 
-  public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
+  public Command arcadeDrive(DoubleSupplier rotation, DoubleSupplier speed) {
     return run(
         () -> {
-          double limitedDrive = driveLimiter.calculate(y.getAsDouble());
-          double limitedTurn = turnLimiter.calculate(x.getAsDouble());
+          double limitedSpeed = driveLimiter.calculate(speed.getAsDouble());
+          double limitedRotation = turnLimiter.calculate(rotation.getAsDouble());
 
           double forward =
               Math.max(
-                  -Constants.DrivetrainConstants.kDriveMaxPower,
-                  Math.min(limitedDrive, Constants.DrivetrainConstants.kDriveMaxPower));
+                  -Constants.DrivetrainConstants.driveMaxPower,
+                  Math.min(limitedSpeed, Constants.DrivetrainConstants.driveMaxPower));
           double turn =
               Math.max(
-                  -Constants.DrivetrainConstants.kTurnMaxPower,
-                  Math.min(limitedTurn, Constants.DrivetrainConstants.kTurnMaxPower));
+                  -Constants.DrivetrainConstants.turnMaxPower,
+                  Math.min(limitedRotation, Constants.DrivetrainConstants.turnMaxPower));
           differentialDrive.arcadeDrive(turn, forward);
         });
   }
