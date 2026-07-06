@@ -85,9 +85,17 @@ public class Drivetrain extends SubsystemBase {
         });
   }
 
-  public void resetAccelerationLimiters() {
+  public void resetDriveLimiter() {
     driveLimiter.reset();
+  }
+
+  public void resetTurnLimiter() {
     turnLimiter.reset();
+  }
+
+  public void resetAccelerationLimiters() {
+    resetDriveLimiter();
+    resetTurnLimiter();
   }
 
   @Override
