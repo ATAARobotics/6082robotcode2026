@@ -5,9 +5,15 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPLTVController;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -17,7 +23,10 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,7 +55,7 @@ public class Drivetrain extends SubsystemBase {
       new DifferentialDrivePoseEstimator3d(
           m_kinematics, pigeon.getRotation3d(), 0, 0, new Pose3d());
 
-  private final Field2d m_field = new Field2d();
+  private final Field2d field = new Field2d();
   private AccelerationLimiter driveLimiter =
       new AccelerationLimiter(
           Constants.DrivetrainConstants.driveMaxRatePerSec,
@@ -55,6 +64,9 @@ public class Drivetrain extends SubsystemBase {
       new AccelerationLimiter(
           Constants.DrivetrainConstants.turnMaxRatePerSec,
           Constants.DrivetrainConstants.turnCurveExponent);
+
+  private SparkClosedLoopController leftClosedLoopController;
+  private SparkClosedLoopController rightClosedLoopController;
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -73,6 +85,10 @@ public class Drivetrain extends SubsystemBase {
         Constants.DrivetrainConstants.metersPerRotation);
     backLeftConfig.encoder.velocityConversionFactor(
         Constants.DrivetrainConstants.metersPerRotation / 60.0);
+    backLeftConfig.closedLoop.pid(
+        Constants.DrivetrainConstants.leftP,
+        Constants.DrivetrainConstants.leftI,
+        Constants.DrivetrainConstants.leftD);
 
     SparkMaxConfig frontRightConfig = new SparkMaxConfig();
     frontRightConfig.follow(Constants.DrivetrainConstants.BackRightId, false);
@@ -85,6 +101,10 @@ public class Drivetrain extends SubsystemBase {
         Constants.DrivetrainConstants.metersPerRotation);
     backRightConfig.encoder.velocityConversionFactor(
         Constants.DrivetrainConstants.metersPerRotation / 60.0);
+    backRightConfig.closedLoop.pid(
+        Constants.DrivetrainConstants.rightP,
+        Constants.DrivetrainConstants.rightI,
+        Constants.DrivetrainConstants.rightD);
 
     frontLeft.configure(
         frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -100,7 +120,44 @@ public class Drivetrain extends SubsystemBase {
     leftEncoder = backLeft.getEncoder();
     rightEncoder = backRight.getEncoder();
 
-    SmartDashboard.putData("Field", m_field);
+    leftClosedLoopController = backLeft.getClosedLoopController();
+    rightClosedLoopController = backRight.getClosedLoopController();
+
+    try {
+      Constants.robotConfig = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
+    AutoBuilder.configure(
+        this::getPose, // Robot pose supplier
+        this::resetPose, // Method to reset odometry (will be called if your auto has a starting
+        // pose)
+        this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) ->
+            driveRobotRelative(
+                speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
+        // Also optionally outputs individual module feedforwards
+        new PPLTVController(
+            0.02), // PPLTVController is the built in path following controller for differential
+        // drive trains
+        Constants.robotConfig, // The robot configuration
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this // Reference to this subsystem to set requirements
+        );
+    
+    SmartDashboard.putData("Field", field);
   }
 
   public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
@@ -147,6 +204,22 @@ public class Drivetrain extends SubsystemBase {
     return rejectsNoTags(estimate) || rejectsSpinningTooFast();
   }
 
+  public ChassisSpeeds getRobotRelativeSpeeds() {
+    return m_kinematics.toChassisSpeeds(
+        new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity()));
+  }
+
+  public void driveRobotRelative(ChassisSpeeds speeds) {
+    var wheelSpeeds = m_kinematics.toWheelSpeeds(speeds);
+    wheelSpeeds.desaturate(Constants.DrivetrainConstants.maxDriveSpeed);
+
+    SmartDashboard.putNumber("Left Motor Speed (m/s)", wheelSpeeds.leftMetersPerSecond);
+    SmartDashboard.putNumber("Right Motor Speed (m/s)", wheelSpeeds.rightMetersPerSecond);
+
+    leftClosedLoopController.setSetpoint(wheelSpeeds.leftMetersPerSecond, ControlType.kVelocity);
+    rightClosedLoopController.setSetpoint(wheelSpeeds.rightMetersPerSecond, ControlType.kVelocity);
+  }
+
   public void resetDriveLimiter() {
     driveLimiter.reset();
   }
@@ -175,8 +248,21 @@ public class Drivetrain extends SubsystemBase {
 
     Pose3d currentPose = poseEstimator.getEstimatedPosition();
 
-    m_field.setRobotPose(currentPose.toPose2d());
+    field.setRobotPose(currentPose.toPose2d());
 
+    // Logging callback for target robot pose
+    PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+        // Do whatever you want with the pose here
+        field.getObject("target pose").setPose(pose);
+    });
+
+    // Logging callback for the active path, this is sent as a list of poses
+    PathPlannerLogging.setLogActivePathCallback((poses) -> {
+        // Do whatever you want with the poses here
+        field.getObject("path").setPoses(poses);
+    });
+
+    SmartDashboard.putData("Field", field);
     SmartDashboard.putNumber("Drivetrain/X", currentPose.getX());
     SmartDashboard.putNumber("Drivetrain/Y", currentPose.getY());
     SmartDashboard.putNumber("Drivetrain/Z", currentPose.getZ());

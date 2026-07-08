@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -49,6 +50,17 @@ public final class Constants {
 
     // meters per motor rotation = wheelDiameterMeters * Math.PI / gearRatio
     public static final double metersPerRotation = 0.04849963145726829;
+
+    // meters per second
+    public static final double maxDriveSpeed = 3;
+
+    public static final double leftP = 0.1;
+    public static final double leftI = 0;
+    public static final double leftD = 0;
+
+    public static final double rightP = 0.1;
+    public static final double rightI = 0;
+    public static final double rightD = 0;
   }
 
   public static class VisionConstants {
@@ -120,4 +132,6 @@ public final class Constants {
       public static double speed = 0.5;
     }
   }
+  
+  public static RobotConfig robotConfig;
 }
