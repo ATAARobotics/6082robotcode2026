@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.util.AccelerationLimiter;
 import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
@@ -23,6 +24,15 @@ public class Drivetrain extends SubsystemBase {
   private SparkMax backRight;
 
   private DifferentialDrive differentialDrive;
+
+  private AccelerationLimiter driveLimiter =
+      new AccelerationLimiter(
+          Constants.DrivetrainConstants.driveMaxRatePerSec,
+          Constants.DrivetrainConstants.driveCurveExponent);
+  private AccelerationLimiter turnLimiter =
+      new AccelerationLimiter(
+          Constants.DrivetrainConstants.turnMaxRatePerSec,
+          Constants.DrivetrainConstants.turnCurveExponent);
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -57,11 +67,35 @@ public class Drivetrain extends SubsystemBase {
     differentialDrive = new DifferentialDrive(backLeft, backRight);
   }
 
-  public Command arcadeDrive(DoubleSupplier x, DoubleSupplier y) {
+  public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
     return run(
         () -> {
-          differentialDrive.arcadeDrive(x.getAsDouble(), y.getAsDouble());
+          double limitedSpeed = driveLimiter.calculate(speed.getAsDouble());
+          double limitedRotation = turnLimiter.calculate(rotation.getAsDouble());
+
+          double forward =
+              Math.max(
+                  -Constants.DrivetrainConstants.driveMaxPower,
+                  Math.min(limitedSpeed, Constants.DrivetrainConstants.driveMaxPower));
+          double turn =
+              Math.max(
+                  -Constants.DrivetrainConstants.turnMaxPower,
+                  Math.min(limitedRotation, Constants.DrivetrainConstants.turnMaxPower));
+          differentialDrive.arcadeDrive(forward, turn);
         });
+  }
+
+  public void resetDriveLimiter() {
+    driveLimiter.reset();
+  }
+
+  public void resetTurnLimiter() {
+    turnLimiter.reset();
+  }
+
+  public void resetAccelerationLimiters() {
+    resetDriveLimiter();
+    resetTurnLimiter();
   }
 
   @Override
