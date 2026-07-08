@@ -25,7 +25,7 @@ public class RobotContainer {
   private final Drivetrain drivetrain = new Drivetrain();
 
   private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+      new CommandXboxController(OperatorConstants.driverControllerPort);
 
   private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
 
@@ -41,7 +41,9 @@ public class RobotContainer {
 
   private void configureBindings() {
     drivetrain.setDefaultCommand(
-        drivetrain.arcadeDrive(m_driverController::getLeftX, m_driverController::getLeftY));
+        drivetrain
+            .arcadeDrive(m_driverController::getLeftY, m_driverController::getRightX)
+            .beforeStarting(drivetrain::resetAccelerationLimiters));
   }
 
   public Pose2d getStartPose() {
