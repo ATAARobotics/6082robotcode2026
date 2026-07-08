@@ -52,15 +52,15 @@ public class RobotContainer {
     Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
     if (alliance == Alliance.Red) {
       return switch (slotIndex) {
-        case 2 -> Constants.StartPoses.kRedStart2;
-        case 3 -> Constants.StartPoses.kRedStart3;
-        default -> Constants.StartPoses.kRedStart1;
+        case 2 -> Constants.StartPoses.redStart2;
+        case 3 -> Constants.StartPoses.redStart3;
+        default -> Constants.StartPoses.redStart1;
       };
     }
     return switch (slotIndex) {
-      case 2 -> Constants.StartPoses.kBlueStart2;
-      case 3 -> Constants.StartPoses.kBlueStart3;
-      default -> Constants.StartPoses.kBlueStart1;
+      case 2 -> Constants.StartPoses.blueStart2;
+      case 3 -> Constants.StartPoses.blueStart3;
+      default -> Constants.StartPoses.blueStart1;
     };
   }
 

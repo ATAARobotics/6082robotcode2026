@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
@@ -14,7 +12,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,8 +24,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.util.LimelightHelpers;
 import frc.robot.util.AccelerationLimiter;
+import frc.robot.util.LimelightHelpers;
 import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
@@ -44,7 +41,7 @@ public class Drivetrain extends SubsystemBase {
 
   private final Pigeon2 pigeon = new Pigeon2(20);
   private final DifferentialDriveKinematics m_kinematics =
-      new DifferentialDriveKinematics(Constants.DrivetrainConstants.kTrackWidthMeters);
+      new DifferentialDriveKinematics(Constants.DrivetrainConstants.trackWidthMeters);
   private final DifferentialDrivePoseEstimator3d poseEstimator =
       new DifferentialDrivePoseEstimator3d(
           m_kinematics, pigeon.getRotation3d(), 0, 0, new Pose3d());
@@ -73,9 +70,9 @@ public class Drivetrain extends SubsystemBase {
     SparkMaxConfig backLeftConfig = new SparkMaxConfig();
     backLeftConfig.idleMode(IdleMode.kBrake);
     backLeftConfig.encoder.positionConversionFactor(
-        Constants.DrivetrainConstants.kMetersPerRotation);
+        Constants.DrivetrainConstants.metersPerRotation);
     backLeftConfig.encoder.velocityConversionFactor(
-        Constants.DrivetrainConstants.kMetersPerRotation / 60.0);
+        Constants.DrivetrainConstants.metersPerRotation / 60.0);
 
     SparkMaxConfig frontRightConfig = new SparkMaxConfig();
     frontRightConfig.follow(Constants.DrivetrainConstants.BackRightId, false);
@@ -84,9 +81,9 @@ public class Drivetrain extends SubsystemBase {
     SparkMaxConfig backRightConfig = new SparkMaxConfig();
     backRightConfig.idleMode(IdleMode.kBrake);
     backRightConfig.encoder.positionConversionFactor(
-        Constants.DrivetrainConstants.kMetersPerRotation);
+        Constants.DrivetrainConstants.metersPerRotation);
     backRightConfig.encoder.velocityConversionFactor(
-        Constants.DrivetrainConstants.kMetersPerRotation / 60.0);
+        Constants.DrivetrainConstants.metersPerRotation / 60.0);
 
     frontLeft.configure(
         frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -105,13 +102,13 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putData("Field", m_field);
 
     LimelightHelpers.setCameraPose_RobotSpace(
-        Constants.VisionConstants.kLimelightName,
-        Constants.VisionConstants.kCameraForwardMeters,
-        Constants.VisionConstants.kCameraSideMeters,
-        Constants.VisionConstants.kCameraUpMeters,
-        Constants.VisionConstants.kCameraRollDegrees,
-        Constants.VisionConstants.kCameraPitchDegrees,
-        Constants.VisionConstants.kCameraYawDegrees);
+        Constants.VisionConstants.limelightName,
+        Constants.VisionConstants.cameraForwardMeters,
+        Constants.VisionConstants.cameraSideMeters,
+        Constants.VisionConstants.cameraUpMeters,
+        Constants.VisionConstants.cameraRollDegrees,
+        Constants.VisionConstants.cameraPitchDegrees,
+        Constants.VisionConstants.cameraYawDegrees);
   }
 
   public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
@@ -144,7 +141,7 @@ public class Drivetrain extends SubsystemBase {
     pigeon.setYaw(0);
     poseEstimator.resetRotation(new Rotation3d());
   }
-  
+
   public void resetDriveLimiter() {
     driveLimiter.reset();
   }
