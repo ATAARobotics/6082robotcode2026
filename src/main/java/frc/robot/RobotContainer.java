@@ -43,7 +43,7 @@ public class RobotContainer {
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain
-            .arcadeDrive(m_driverController::getRightX, m_driverController::getLeftY)
+            .arcadeDrive(m_driverController::getLeftY, m_driverController::getRightX)
             .beforeStarting(drivetrain::resetAccelerationLimiters));
   }
 

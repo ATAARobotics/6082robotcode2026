@@ -67,7 +67,7 @@ public class Drivetrain extends SubsystemBase {
     differentialDrive = new DifferentialDrive(backLeft, backRight);
   }
 
-  public Command arcadeDrive(DoubleSupplier rotation, DoubleSupplier speed) {
+  public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
     return run(
         () -> {
           double limitedSpeed = driveLimiter.calculate(speed.getAsDouble());
