@@ -68,10 +68,6 @@ public class RobotContainer {
     drivetrain.resetPose(getStartPose());
   }
 
-  public void zeroHeading() {
-    drivetrain.zeroHeading();
-  }
-
   public Command getAutonomousCommand() {
     return Autos.exampleAuto(drivetrain);
   }

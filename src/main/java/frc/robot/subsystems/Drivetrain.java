@@ -39,7 +39,7 @@ public class Drivetrain extends SubsystemBase {
 
   private DifferentialDrive differentialDrive;
 
-  private final Pigeon2 pigeon = new Pigeon2(20);
+  private final Pigeon2 pigeon = new Pigeon2(Constants.DrivetrainConstants.PigeonId);
   private final DifferentialDriveKinematics m_kinematics =
       new DifferentialDriveKinematics(Constants.DrivetrainConstants.trackWidthMeters);
   private final DifferentialDrivePoseEstimator3d poseEstimator =
@@ -109,6 +109,15 @@ public class Drivetrain extends SubsystemBase {
         Constants.VisionConstants.cameraRollDegrees,
         Constants.VisionConstants.cameraPitchDegrees,
         Constants.VisionConstants.cameraYawDegrees);
+
+    LimelightHelpers.SetRobotOrientation(
+        Constants.VisionConstants.limelightName,
+        poseEstimator.getEstimatedPosition().getRotation().getZ() * (180.0 / Math.PI),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0);
   }
 
   public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
@@ -142,47 +151,27 @@ public class Drivetrain extends SubsystemBase {
     poseEstimator.resetRotation(new Rotation3d());
   }
 
-  public void resetDriveLimiter() {
-    driveLimiter.reset();
+  private boolean rejectsNoTags(LimelightHelpers.PoseEstimate estimate) {
+    return estimate.tagCount == 0;
   }
 
-  public void resetTurnLimiter() {
-    turnLimiter.reset();
+  private boolean rejectsSpinningTooFast(LimelightHelpers.PoseEstimate estimate) {
+    return Math.abs(pigeon.getAngularVelocityZDevice().getValueAsDouble()) > 720;
   }
 
-  public void resetAccelerationLimiters() {
-    resetDriveLimiter();
-    resetTurnLimiter();
+  private boolean shouldRejectVisionUpdate(LimelightHelpers.PoseEstimate estimate) {
+    return rejectsNoTags(estimate) || rejectsSpinningTooFast(estimate);
   }
 
   @Override
   public void periodic() {
-    boolean doRejectUpdate = false;
-
-    LimelightHelpers.SetRobotOrientation(
-        "limelight",
-        poseEstimator.getEstimatedPosition().getRotation().getZ() * (180.0 / Math.PI),
-        pigeon.getAngularVelocityZDevice().getValueAsDouble(),
-        pigeon.getPitch().getValueAsDouble(),
-        pigeon.getRoll().getValueAsDouble(),
-        pigeon.getAngularVelocityYDevice().getValueAsDouble(),
-        pigeon.getAngularVelocityXDevice().getValueAsDouble());
-
-    LimelightHelpers.PoseEstimate mt2;
-    mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-
-    if (Math.abs(pigeon.getAngularVelocityZDevice().getValueAsDouble()) > 720) {
-      doRejectUpdate = true;
-    }
-
-    if (mt2.tagCount == 0) {
-      doRejectUpdate = true;
-    }
+    LimelightHelpers.PoseEstimate mt2 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.VisionConstants.limelightName);
 
     poseEstimator.update(
         pigeon.getRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
 
-    if (!doRejectUpdate) {
+    if (!shouldRejectVisionUpdate(mt2)) {
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
       poseEstimator.addVisionMeasurement(new Pose3d(mt2.pose), mt2.timestampSeconds);
     }

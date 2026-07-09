@@ -18,6 +18,7 @@ public final class Constants {
     public static final int BackLeftId = 11;
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
+    public static final int PigeonId = 20;
 
     // Max acceleration per second for the drive limiter.
     public static final double driveMaxRatePerSec = 14.0;
