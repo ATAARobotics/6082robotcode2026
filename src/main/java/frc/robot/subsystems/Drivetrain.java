@@ -138,16 +138,27 @@ public class Drivetrain extends SubsystemBase {
         });
   }
 
+  // Yaw component is always 0: pigeon.reset() zeros yaw on hardware, so we only
+  // need to offset the unresettable pitch/roll to treat the current pose as (0,0,0).
+  private Rotation3d rotationOffset = new Rotation3d();
+
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition().toPose2d();
   }
 
+  private Rotation3d getAdjustedRotation3d() {
+    return pigeon.getRotation3d().minus(rotationOffset);
+  }
+
   public void resetPose(Pose2d pose) {
-    poseEstimator.resetPosition(pigeon.getRotation3d(), 0, 0, new Pose3d(pose));
+    pigeon.reset();
+    rotationOffset = pigeon.getRotation3d();
+    poseEstimator.resetPosition(getAdjustedRotation3d(), 0, 0, new Pose3d(pose));
   }
 
   public void zeroHeading() {
-    pigeon.setYaw(0);
+    pigeon.reset();
+    rotationOffset = pigeon.getRotation3d();
     poseEstimator.resetRotation(new Rotation3d());
   }
 
@@ -163,13 +174,26 @@ public class Drivetrain extends SubsystemBase {
     return rejectsNoTags(estimate) || rejectsSpinningTooFast(estimate);
   }
 
+  public void resetDriveLimiter() {
+    driveLimiter.reset();
+  }
+
+  public void resetTurnLimiter() {
+    turnLimiter.reset();
+  }
+
+  public void resetAccelerationLimiters() {
+    resetDriveLimiter();
+    resetTurnLimiter();
+  }
+
   @Override
   public void periodic() {
     LimelightHelpers.PoseEstimate mt2 =
         LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.VisionConstants.limelightName);
 
     poseEstimator.update(
-        pigeon.getRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
+        getAdjustedRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
 
     if (!shouldRejectVisionUpdate(mt2)) {
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
