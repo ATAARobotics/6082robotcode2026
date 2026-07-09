@@ -166,12 +166,12 @@ public class Drivetrain extends SubsystemBase {
     return estimate.tagCount == 0;
   }
 
-  private boolean rejectsSpinningTooFast(LimelightHelpers.PoseEstimate estimate) {
+  private boolean rejectsSpinningTooFast() {
     return Math.abs(pigeon.getAngularVelocityZDevice().getValueAsDouble()) > 720;
   }
 
   private boolean shouldRejectVisionUpdate(LimelightHelpers.PoseEstimate estimate) {
-    return rejectsNoTags(estimate) || rejectsSpinningTooFast(estimate);
+    return rejectsNoTags(estimate) || rejectsSpinningTooFast();
   }
 
   public void resetDriveLimiter() {
