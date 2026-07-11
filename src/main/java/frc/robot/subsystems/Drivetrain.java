@@ -80,6 +80,7 @@ public class Drivetrain extends SubsystemBase {
 
     SparkMaxConfig backRightConfig = new SparkMaxConfig();
     backRightConfig.idleMode(IdleMode.kBrake);
+    backRightConfig.inverted(true);
     backRightConfig.encoder.positionConversionFactor(
         Constants.DrivetrainConstants.metersPerRotation);
     backRightConfig.encoder.velocityConversionFactor(
