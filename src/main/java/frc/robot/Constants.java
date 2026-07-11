@@ -46,14 +46,6 @@ public final class Constants {
 
   public static class VisionConstants {
     public static final String limelightName = "limelight";
-
-    public static final double cameraForwardMeters = 0.0;
-    public static final double cameraSideMeters = 0.0;
-    public static final double cameraUpMeters = 0.0;
-
-    public static final double cameraRollDegrees = 0.0;
-    public static final double cameraPitchDegrees = 0.0;
-    public static final double cameraYawDegrees = 0.0;
   }
 
   public static class StartPoses {

@@ -100,24 +100,6 @@ public class Drivetrain extends SubsystemBase {
     rightEncoder = backRight.getEncoder();
 
     SmartDashboard.putData("Field", m_field);
-
-    LimelightHelpers.setCameraPose_RobotSpace(
-        Constants.VisionConstants.limelightName,
-        Constants.VisionConstants.cameraForwardMeters,
-        Constants.VisionConstants.cameraSideMeters,
-        Constants.VisionConstants.cameraUpMeters,
-        Constants.VisionConstants.cameraRollDegrees,
-        Constants.VisionConstants.cameraPitchDegrees,
-        Constants.VisionConstants.cameraYawDegrees);
-
-    LimelightHelpers.SetRobotOrientation(
-        Constants.VisionConstants.limelightName,
-        poseEstimator.getEstimatedPosition().getRotation().getZ() * (180.0 / Math.PI),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0);
   }
 
   public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
@@ -138,27 +120,17 @@ public class Drivetrain extends SubsystemBase {
         });
   }
 
-  // Yaw component is always 0: pigeon.reset() zeros yaw on hardware, so we only
-  // need to offset the unresettable pitch/roll to treat the current pose as (0,0,0).
-  private Rotation3d rotationOffset = new Rotation3d();
-
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition().toPose2d();
   }
 
-  private Rotation3d getAdjustedRotation3d() {
-    return pigeon.getRotation3d().minus(rotationOffset);
-  }
-
   public void resetPose(Pose2d pose) {
-    pigeon.reset();
-    rotationOffset = pigeon.getRotation3d();
-    poseEstimator.resetPosition(getAdjustedRotation3d(), 0, 0, new Pose3d(pose));
+    pigeon.setYaw(pose.getRotation().getDegrees());
+    poseEstimator.resetPosition(pigeon.getRotation3d(), 0, 0, new Pose3d(pose));
   }
 
   public void zeroHeading() {
     pigeon.reset();
-    rotationOffset = pigeon.getRotation3d();
     poseEstimator.resetRotation(new Rotation3d());
   }
 
@@ -193,7 +165,7 @@ public class Drivetrain extends SubsystemBase {
         LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.VisionConstants.limelightName);
 
     poseEstimator.update(
-        getAdjustedRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
+        pigeon.getRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
 
     if (!shouldRejectVisionUpdate(mt2)) {
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
