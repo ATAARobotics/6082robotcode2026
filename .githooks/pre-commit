@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Pre-commit hook mirroring CI checks (.woodpecker/main.yaml).
+# Runs: build, spotlessCheck (format), pmdMain (lint).
+#
+# Auto-installed on first `./gradlew build` via the installGitHooks task
+# in build.gradle. To install manually:
+#   ./scripts/install-hooks.sh        (or)
+#   git config core.hooksPath .githooks
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+if [ ! -x "./gradlew" ]; then
+  echo "pre-commit: gradlew not found or not executable at repo root" >&2
+  exit 1
+fi
+
+run_step() {
+  local label="$1"
+  shift
+  echo
+  echo "=========================================="
+  echo "pre-commit: $label"
+  echo "=========================================="
+  "$@"
+}
+
+run_step "build (./gradlew build)" ./gradlew build
+run_step "format (./gradlew spotlessCheck)" ./gradlew spotlessCheck
+run_step "lint (./gradlew pmdMain -Pci)" ./gradlew pmdMain -Pci
+
+echo
+echo "pre-commit: all checks passed."
