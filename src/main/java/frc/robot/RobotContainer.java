@@ -10,10 +10,13 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -23,9 +26,12 @@ import frc.robot.subsystems.Drivetrain;
  */
 public class RobotContainer {
   private final Drivetrain drivetrain = new Drivetrain();
+  private final Shooter shooter = new Shooter();
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.driverControllerPort);
+  private final CommandXboxController m_operatorController =
+      new CommandXboxController(OperatorConstants.operatorControllerPort);
 
   private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
 
@@ -44,6 +50,20 @@ public class RobotContainer {
         drivetrain
             .arcadeDrive(() -> -m_driverController.getLeftY(), () -> m_driverController.getRightX())
             .beforeStarting(drivetrain::resetAccelerationLimiters));
+
+    m_operatorController
+        .a()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointLowRpm)));
+    m_operatorController
+        .b()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointMidRpm)));
+    m_operatorController
+        .x()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointHighRpm)));
+
+    m_operatorController
+        .rightTrigger()
+        .whileTrue(Commands.startEnd(shooter::applySelected, shooter::stop, shooter));
   }
 
   public Pose2d getStartPose() {
