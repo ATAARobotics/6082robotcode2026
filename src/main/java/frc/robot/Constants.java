@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+
 public final class Constants {
   public static class OperatorConstants {
     public static final int driverControllerPort = 0;
@@ -15,6 +19,7 @@ public final class Constants {
     public static final int BackLeftId = 11;
     public static final int FrontRightId = 14;
     public static final int BackRightId = 13;
+    public static final int PigeonId = 20;
 
     // Max acceleration per second for the drive limiter.
     public static final double driveMaxRatePerSec = 14.0;
@@ -33,6 +38,24 @@ public final class Constants {
 
     // Maximum power for turn
     public static final double turnMaxPower = 0.8;
+
+    public static final double trackWidthMeters = Units.inchesToMeters(24.5);
+
+    // meters per motor rotation = wheelDiameterMeters * Math.PI / gearRatio
+    public static final double metersPerRotation = 0.04849963145726829;
+  }
+
+  public static class VisionConstants {
+    public static final String limelightName = "limelight";
+  }
+
+  public static class StartPoses {
+    public static final Pose2d blueStart1 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d blueStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d blueStart3 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d redStart1 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d redStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
+    public static final Pose2d redStart3 = new Pose2d(0.0, 0.0, new Rotation2d());
   }
 
   public static class ShooterConstants {
