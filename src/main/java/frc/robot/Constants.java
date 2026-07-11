@@ -11,6 +11,13 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static class OperatorConstants {
     public static final int driverControllerPort = 0;
+    public static final int operatorControllerPort = 1;
+  }
+
+  public static class IntakeConstants {
+    public static final int intakeMotorId = 15;
+
+    public static final double intakeSpeed = 0.6;
   }
 
   public static class DrivetrainConstants {
