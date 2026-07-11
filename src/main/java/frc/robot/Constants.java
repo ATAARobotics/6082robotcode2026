@@ -61,6 +61,8 @@ public final class Constants {
   public static class ShooterConstants {
     public static final int motorId = 20;
 
+    public static final int smartCurrentLimitAmps = 40;
+
     public static final double setpointLowRpm = 1500.0;
     public static final double setpointMidRpm = 3000.0;
     public static final double setpointHighRpm = 4500.0;
