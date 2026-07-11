@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase {
     SparkFlexConfig config = new SparkFlexConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(40);
+    config.smartCurrentLimit(ShooterConstants.smartCurrentLimitAmps);
 
     config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     config.closedLoop.outputRange(ShooterConstants.minOutput, ShooterConstants.maxOutput);
