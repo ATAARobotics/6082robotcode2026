@@ -116,7 +116,7 @@ public class Drivetrain extends SubsystemBase {
               Math.max(
                   -Constants.DrivetrainConstants.turnMaxPower,
                   Math.min(limitedRotation, Constants.DrivetrainConstants.turnMaxPower));
-          differentialDrive.arcadeDrive(forward, turn);
+          differentialDrive.arcadeDrive(turn, forward);
         });
   }
 
