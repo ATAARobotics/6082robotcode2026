@@ -5,11 +5,14 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,10 +23,13 @@ import frc.robot.subsystems.Drivetrain;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drivetrain drivetrain = new Drivetrain();
+  private final Shooter shooter = new Shooter();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.driverControllerPort);
+  private final CommandXboxController m_operatorController =
+      new CommandXboxController(OperatorConstants.operatorControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -45,6 +51,20 @@ public class RobotContainer {
         drivetrain
             .arcadeDrive(m_driverController::getLeftY, m_driverController::getRightX)
             .beforeStarting(drivetrain::resetAccelerationLimiters));
+
+    m_operatorController
+        .a()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointLowRpm)));
+    m_operatorController
+        .b()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointMidRpm)));
+    m_operatorController
+        .x()
+        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointHighRpm)));
+
+    m_operatorController
+        .rightTrigger()
+        .whileTrue(Commands.startEnd(shooter::applySelected, shooter::stop, shooter));
   }
 
   /**
