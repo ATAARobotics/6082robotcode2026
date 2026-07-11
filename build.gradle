@@ -118,7 +118,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/bin/**'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**', '**/util/LimelightHelpers.java'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -167,4 +167,8 @@ pmd {
     rulesMinimumPriority = 5
     ruleSetFiles = files("pmdRules.xml")
     ignoreFailures = true
+}
+
+tasks.named('pmdMain') {
+    exclude '**/util/LimelightHelpers.java'
 }

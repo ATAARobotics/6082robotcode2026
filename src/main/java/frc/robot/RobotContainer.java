@@ -4,9 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
@@ -18,28 +22,23 @@ import frc.robot.subsystems.Drivetrain;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
   private final Drivetrain drivetrain = new Drivetrain();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.driverControllerPort);
 
+  private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
+    m_startSlotChooser.setDefaultOption("Slot 1", 1);
+    m_startSlotChooser.addOption("Slot 2", 2);
+    m_startSlotChooser.addOption("Slot 3", 3);
+    SmartDashboard.putData("Start Slot", m_startSlotChooser);
+
     configureBindings();
   }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain
@@ -47,13 +46,29 @@ public class RobotContainer {
             .beforeStarting(drivetrain::resetAccelerationLimiters));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
+  public Pose2d getStartPose() {
+    Integer slot = m_startSlotChooser.getSelected();
+    int slotIndex = (slot == null) ? 1 : slot;
+    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    if (alliance == Alliance.Red) {
+      return switch (slotIndex) {
+        case 2 -> Constants.StartPoses.redStart2;
+        case 3 -> Constants.StartPoses.redStart3;
+        default -> Constants.StartPoses.redStart1;
+      };
+    }
+    return switch (slotIndex) {
+      case 2 -> Constants.StartPoses.blueStart2;
+      case 3 -> Constants.StartPoses.blueStart3;
+      default -> Constants.StartPoses.blueStart1;
+    };
+  }
+
+  public void resetStartPose() {
+    drivetrain.resetPose(getStartPose());
+  }
+
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
     return Autos.exampleAuto(drivetrain);
   }
 }
