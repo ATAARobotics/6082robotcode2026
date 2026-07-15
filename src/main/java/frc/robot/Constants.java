@@ -79,6 +79,8 @@ public final class Constants {
 
       public static final double minOutput = -1.0;
       public static final double maxOutput = 1.0;
+
+      public static final double indexSpinUpTimeoutSeconds = 3.0;
     }
 
     public static class Index {

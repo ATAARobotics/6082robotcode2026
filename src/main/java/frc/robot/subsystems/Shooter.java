@@ -2,14 +2,13 @@ package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
@@ -24,21 +23,18 @@ public class Shooter extends SubsystemBase {
   private double selectedIndexRpm = 0.0;
   private boolean runningShooter = false;
   private boolean runningIndex = false;
+  private final Timer spinUpTimer = new Timer();
 
   public Shooter() {
     // Shooter
     shooterMotor = new SparkFlex(ShooterConstants.Shooter.motorId, MotorType.kBrushless);
     shooterClosedLoop = shooterMotor.getClosedLoopController();
 
-    // TODO: CLEANUP also it still runs at setpoint 0
-
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.inverted(true);
     shooterConfig.idleMode(IdleMode.kCoast);
-    // shooterConfig.smartCurrentLimit(ShooterConstants.Shooter.smartCurrentLimitAmps);
-
-    // shooterConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    // shooterConfig.closedLoop.outputRange(ShooterConstants.Shooter.minOutput, ShooterConstants.Shooter.maxOutput);
+    
+    // TODO: TEST!!!
     // shooterConfig.closedLoop.allowedClosedLoopError(
     //     ShooterConstants.Shooter.allowedErrorRpm, ClosedLoopSlot.kSlot0);
     shooterConfig.closedLoop.pid(ShooterConstants.Shooter.pidP, ShooterConstants.Shooter.pidI, ShooterConstants.Shooter.pidD);
@@ -54,10 +50,8 @@ public class Shooter extends SubsystemBase {
     indexConfig.inverted(true);
     indexConfig.idleMode(IdleMode.kCoast);
     indexConfig.encoder.positionConversionFactor(0.7058823529411765);
-    // indexConfig.smartCurrentLimit(ShooterConstants.Index.smartCurrentLimitAmps);
-
-    // indexConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    // indexConfig.closedLoop.outputRange(ShooterConstants.Index.minOutput, ShooterConstants.Index.maxOutput);
+    
+    // TODO: TEST!!!
     // indexConfig.closedLoop.allowedClosedLoopError(
     //     ShooterConstants.Index.allowedErrorRpm, ClosedLoopSlot.kSlot0);
     indexConfig.closedLoop.pid(ShooterConstants.Index.pidP, ShooterConstants.Index.pidI, ShooterConstants.Index.pidD);
@@ -85,6 +79,7 @@ public class Shooter extends SubsystemBase {
 
   public void applySelectedShooter() {
     runningShooter = true;
+    spinUpTimer.restart();
     applyShooterSetpoint();
   }
 
@@ -109,11 +104,15 @@ public class Shooter extends SubsystemBase {
   public void stopShooter() {
     runningShooter = false;
     shooterClosedLoop.setSetpoint(0.0, ControlType.kVelocity);
+    shooterMotor.stopMotor();
+    spinUpTimer.stop();
+    spinUpTimer.reset();
   }
 
   public void stopIndex() {
     runningIndex = false;
     indexClosedLoop.setSetpoint(0.0, ControlType.kVelocity);
+    indexMotor.stopMotor();
   }
 
   public void stop() {
@@ -135,6 +134,11 @@ public class Shooter extends SubsystemBase {
 
   public boolean shooterAtSetpoint() {
     return Math.abs(getShooterVelocityRpm() - selectedShooterRpm) <= ShooterConstants.Shooter.allowedErrorRpm;
+  }
+
+  public boolean indexReadyToSpin() {
+    return shooterAtSetpoint()
+        || spinUpTimer.hasElapsed(ShooterConstants.Shooter.indexSpinUpTimeoutSeconds);
   }
 
   public boolean indexAtSetpoint() {

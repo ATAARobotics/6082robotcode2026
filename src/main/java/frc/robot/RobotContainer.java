@@ -12,11 +12,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Shooter;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -34,6 +36,8 @@ public class RobotContainer {
       new CommandXboxController(OperatorConstants.operatorControllerPort);
 
   private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
+
+  private boolean indexLatched = false;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -70,9 +74,29 @@ public class RobotContainer {
           shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
         }));
 
-    m_operatorController
-        .rightTrigger()
-        .whileTrue(Commands.startEnd(shooter::applySelected, shooter::stop, shooter));
+    BooleanSupplier triggerHeld = m_operatorController.rightTrigger();
+    BooleanSupplier overrideHeld = m_operatorController.povUp();
+
+    Trigger indexShouldRun = new Trigger(() -> {
+      boolean trigger = triggerHeld.getAsBoolean();
+      boolean override = overrideHeld.getAsBoolean();
+      boolean ready = shooter.indexReadyToSpin();
+
+      if (!trigger) {
+        indexLatched = false;
+      } else if (ready) {
+        indexLatched = true;
+      }
+      return override || (trigger && indexLatched);
+    });
+
+    Command spinUpShooter = Commands.startEnd(
+        shooter::applySelectedShooter, shooter::stopShooter, shooter);
+    Command runIndex = Commands.startEnd(
+        shooter::applySelectedIndex, shooter::stopIndex, shooter);
+
+    new Trigger(triggerHeld).whileTrue(spinUpShooter);
+    indexShouldRun.whileTrue(runIndex);
   }
 
   public Pose2d getStartPose() {
