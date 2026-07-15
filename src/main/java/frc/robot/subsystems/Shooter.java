@@ -15,74 +15,171 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase {
-  private final SparkFlex motor;
-  private final SparkClosedLoopController closedLoop;
+  private final SparkFlex shooterMotor;
+  private final SparkFlex indexMotor;
+  private final SparkClosedLoopController shooterClosedLoop;
+  private final SparkClosedLoopController indexClosedLoop;
 
-  private double selectedRpm = 0.0;
-  private boolean running = false;
+  private double selectedShooterRpm = 0.0;
+  private double selectedIndexRpm = 0.0;
+  private boolean runningShooter = false;
+  private boolean runningIndex = false;
 
   public Shooter() {
-    motor = new SparkFlex(ShooterConstants.motorId, MotorType.kBrushless);
-    closedLoop = motor.getClosedLoopController();
+    // Shooter
+    shooterMotor = new SparkFlex(ShooterConstants.Shooter.motorId, MotorType.kBrushless);
+    shooterClosedLoop = shooterMotor.getClosedLoopController();
 
-    SparkFlexConfig config = new SparkFlexConfig();
-    config.inverted(false);
-    config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(ShooterConstants.smartCurrentLimitAmps);
+    // TODO: CLEANUP also it still runs at setpoint 0
 
-    config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    config.closedLoop.outputRange(ShooterConstants.minOutput, ShooterConstants.maxOutput);
-    config.closedLoop.allowedClosedLoopError(
-        ShooterConstants.allowedErrorRpm, ClosedLoopSlot.kSlot0);
-    config.closedLoop.pid(ShooterConstants.pidP, ShooterConstants.pidI, ShooterConstants.pidD);
-    config.closedLoop.feedForward.sv(ShooterConstants.kS, ShooterConstants.kV);
+    SparkFlexConfig shooterConfig = new SparkFlexConfig();
+    shooterConfig.inverted(true);
+    shooterConfig.idleMode(IdleMode.kCoast);
+    // shooterConfig.smartCurrentLimit(ShooterConstants.Shooter.smartCurrentLimitAmps);
 
-    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // shooterConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    // shooterConfig.closedLoop.outputRange(ShooterConstants.Shooter.minOutput, ShooterConstants.Shooter.maxOutput);
+    // shooterConfig.closedLoop.allowedClosedLoopError(
+    //     ShooterConstants.Shooter.allowedErrorRpm, ClosedLoopSlot.kSlot0);
+    shooterConfig.closedLoop.pid(ShooterConstants.Shooter.pidP, ShooterConstants.Shooter.pidI, ShooterConstants.Shooter.pidD);
+    shooterConfig.closedLoop.feedForward.sv(ShooterConstants.Shooter.kS, ShooterConstants.Shooter.kV);
+
+    shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    // Index
+    indexMotor = new SparkFlex(ShooterConstants.Index.motorId, MotorType.kBrushless);
+    indexClosedLoop = indexMotor.getClosedLoopController();
+
+    SparkFlexConfig indexConfig = new SparkFlexConfig();
+    indexConfig.inverted(true);
+    indexConfig.idleMode(IdleMode.kCoast);
+    indexConfig.encoder.positionConversionFactor(0.7058823529411765);
+    // indexConfig.smartCurrentLimit(ShooterConstants.Index.smartCurrentLimitAmps);
+
+    // indexConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    // indexConfig.closedLoop.outputRange(ShooterConstants.Index.minOutput, ShooterConstants.Index.maxOutput);
+    // indexConfig.closedLoop.allowedClosedLoopError(
+    //     ShooterConstants.Index.allowedErrorRpm, ClosedLoopSlot.kSlot0);
+    indexConfig.closedLoop.pid(ShooterConstants.Index.pidP, ShooterConstants.Index.pidI, ShooterConstants.Index.pidD);
+    indexConfig.closedLoop.feedForward.sv(ShooterConstants.Index.kS, ShooterConstants.Index.kV);
+
+    indexMotor.configure(indexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    SmartDashboard.putNumber("Shooter/Shooter/Setpoint Override", 0.0);
+    SmartDashboard.putNumber("Shooter/Index/Setpoint Override", 0.0);
   }
 
-  public void setSelectedRpm(double rpm) {
-    selectedRpm = rpm;
-    if (running) {
-      applySetpoint();
+  public void setSelectedShooterRpm(double rpm) {
+    selectedShooterRpm = rpm;
+    if (runningShooter) {
+      applyShooterSetpoint();
     }
   }
 
+  public void setSelectedIndexRpm(double rpm) {
+    selectedIndexRpm = rpm;
+    if (runningIndex) {
+      applyIndexSetpoint();
+    }
+  }
+
+  public void applySelectedShooter() {
+    runningShooter = true;
+    applyShooterSetpoint();
+  }
+
+  public void applySelectedIndex() {
+    runningIndex = true;
+    applyIndexSetpoint();
+  }
+
   public void applySelected() {
-    running = true;
-    applySetpoint();
+    applySelectedShooter();
+    applySelectedIndex();
+  }
+
+  public void applyShooterOverride(double rpm) {
+    shooterClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
+  }
+  
+  public void applyIndexOverride(double rpm) {
+    indexClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
+  }
+
+  public void stopShooter() {
+    runningShooter = false;
+    shooterClosedLoop.setSetpoint(0.0, ControlType.kVelocity);
+  }
+
+  public void stopIndex() {
+    runningIndex = false;
+    indexClosedLoop.setSetpoint(0.0, ControlType.kVelocity);
   }
 
   public void stop() {
-    running = false;
-    closedLoop.setSetpoint(0.0, ControlType.kVelocity);
+    stopShooter();
+    stopIndex();
+  }
+ 
+  public double getSelectedShooterRpm() {
+    return selectedShooterRpm;
   }
 
-  public double getSelectedRpm() {
-    return selectedRpm;
+  public double getShooterVelocityRpm() {
+    return shooterMotor.getEncoder().getVelocity();
   }
 
-  public double getVelocityRpm() {
-    return motor.getEncoder().getVelocity();
+  public double getIndexVelocityRpm() {
+    return indexMotor.getEncoder().getVelocity();
   }
 
-  public boolean atSetpoint() {
-    return Math.abs(getVelocityRpm() - selectedRpm) <= ShooterConstants.allowedErrorRpm;
+  public boolean shooterAtSetpoint() {
+    return Math.abs(getShooterVelocityRpm() - selectedShooterRpm) <= ShooterConstants.Shooter.allowedErrorRpm;
   }
 
-  public boolean isRunning() {
-    return running;
+  public boolean indexAtSetpoint() {
+    return Math.abs(getIndexVelocityRpm() - selectedIndexRpm) <= ShooterConstants.Index.allowedErrorRpm;
   }
 
-  private void applySetpoint() {
-    closedLoop.setSetpoint(selectedRpm, ControlType.kVelocity);
+  public boolean isShooterRunning() {
+    return runningShooter;
+  }
+
+  public boolean isIndexRunning() {
+    return runningIndex;
+  }
+
+  private void applyShooterSetpoint() {
+    shooterClosedLoop.setSetpoint(selectedShooterRpm, ControlType.kVelocity);
+  }
+
+  private void applyIndexSetpoint() {
+    indexClosedLoop.setSetpoint(selectedIndexRpm, ControlType.kVelocity);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Shooter/Selected RPM", selectedRpm);
-    SmartDashboard.putNumber("Shooter/Velocity RPM", getVelocityRpm());
-    SmartDashboard.putBoolean("Shooter/At Setpoint", running && atSetpoint());
-    SmartDashboard.putBoolean("Shooter/Running", running);
+    double overrideShooterRpm = SmartDashboard.getNumber("Shooter/Shooter/Setpoint Override", 0.0);
+    if (runningShooter && overrideShooterRpm != 0.0) {
+      selectedShooterRpm = overrideShooterRpm;
+      shooterClosedLoop.setSetpoint(overrideShooterRpm, ControlType.kVelocity);
+    }
+
+    double overrideIndexRpm = SmartDashboard.getNumber("Shooter/Index/Setpoint Override", 0.0);
+    if (runningIndex && overrideIndexRpm != 0.0) {
+      selectedIndexRpm = overrideIndexRpm;
+      indexClosedLoop.setSetpoint(overrideIndexRpm, ControlType.kVelocity);
+    }
+
+    SmartDashboard.putNumber("Shooter/Shooter/Selected RPM", selectedShooterRpm);
+    SmartDashboard.putNumber("Shooter/Shooter/Velocity RPM", getShooterVelocityRpm());
+    SmartDashboard.putBoolean("Shooter/Shooter/At Setpoint", runningShooter && shooterAtSetpoint());
+    SmartDashboard.putBoolean("Shooter/Shooter/Running", runningShooter);
+
+    SmartDashboard.putNumber("Shooter/Index/Selected RPM", selectedIndexRpm);
+    SmartDashboard.putNumber("Shooter/Index/Velocity RPM", getIndexVelocityRpm());
+    SmartDashboard.putBoolean("Shooter/Index/At Setpoint", runningIndex && indexAtSetpoint());
+    SmartDashboard.putBoolean("Shooter/Index/Running", runningIndex);
   }
 
   @Override

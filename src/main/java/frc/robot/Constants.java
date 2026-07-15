@@ -59,24 +59,48 @@ public final class Constants {
   }
 
   public static class ShooterConstants {
-    public static final int motorId = 20;
+    public static class Shooter {
+      public static final int motorId = 50;
 
-    public static final int smartCurrentLimitAmps = 40;
+      public static final int smartCurrentLimitAmps = 40;
 
-    public static final double setpointLowRpm = 1500.0;
-    public static final double setpointMidRpm = 3000.0;
-    public static final double setpointHighRpm = 4500.0;
+      public static final double setpointLowRpm = 3000.0;
+      public static final double setpointMidRpm = 3660.0;
+      public static final double setpointHighRpm = 4100.0;
 
-    public static final double pidP = 0.00015;
-    public static final double pidI = 0.0;
-    public static final double pidD = 0.0;
+      public static final double pidP = 0.0001;
+      public static final double pidI = 0.0;
+      public static final double pidD = 0.0;
 
-    public static final double kS = 0.05;
-    public static final double kV = 0.00018;
+      public static final double kS = 0.2;
+      public static final double kV = 0.00173;
 
-    public static final double allowedErrorRpm = 75.0;
+      public static final double allowedErrorRpm = 29.0;
 
-    public static final double minOutput = -1.0;
-    public static final double maxOutput = 1.0;
+      public static final double minOutput = -1.0;
+      public static final double maxOutput = 1.0;
+    }
+
+    public static class Index {
+      public static final int motorId = 51;
+
+      public static final int smartCurrentLimitAmps = 40;
+
+      public static final double setpointLowRpm = 3000.0;
+      public static final double setpointMidRpm = 3660.0;
+      public static final double setpointHighRpm = 4100.0;
+
+      public static final double pidP = 0.0001;
+      public static final double pidI = 0.0;
+      public static final double pidD = 0.0;
+
+      public static final double kS = 0.15;
+      public static final double kV = 0.002;
+
+      public static final double allowedErrorRpm = 52.0;
+
+      public static final double minOutput = -1.0;
+      public static final double maxOutput = 1.0;
+    }
   }
 }

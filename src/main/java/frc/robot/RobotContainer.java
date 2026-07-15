@@ -53,13 +53,22 @@ public class RobotContainer {
 
     m_operatorController
         .a()
-        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointLowRpm)));
+        .onTrue(shooter.runOnce(() -> {
+          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointLowRpm);
+          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointLowRpm);
+        }));
     m_operatorController
         .b()
-        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointMidRpm)));
+        .onTrue(shooter.runOnce(() -> {
+          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointMidRpm);
+          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointMidRpm);
+        }));
     m_operatorController
         .x()
-        .onTrue(shooter.runOnce(() -> shooter.setSelectedRpm(ShooterConstants.setpointHighRpm)));
+        .onTrue(shooter.runOnce(() -> {
+          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointHighRpm);
+          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
+        }));
 
     m_operatorController
         .rightTrigger()
