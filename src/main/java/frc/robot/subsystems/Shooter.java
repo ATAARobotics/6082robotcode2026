@@ -33,14 +33,19 @@ public class Shooter extends SubsystemBase {
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.inverted(true);
     shooterConfig.idleMode(IdleMode.kCoast);
-    
+
     // TODO: TEST!!!
     // shooterConfig.closedLoop.allowedClosedLoopError(
     //     ShooterConstants.Shooter.allowedErrorRpm, ClosedLoopSlot.kSlot0);
-    shooterConfig.closedLoop.pid(ShooterConstants.Shooter.pidP, ShooterConstants.Shooter.pidI, ShooterConstants.Shooter.pidD);
-    shooterConfig.closedLoop.feedForward.sv(ShooterConstants.Shooter.kS, ShooterConstants.Shooter.kV);
+    shooterConfig.closedLoop.pid(
+        ShooterConstants.Shooter.pidP,
+        ShooterConstants.Shooter.pidI,
+        ShooterConstants.Shooter.pidD);
+    shooterConfig.closedLoop.feedForward.sv(
+        ShooterConstants.Shooter.kS, ShooterConstants.Shooter.kV);
 
-    shooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    shooterMotor.configure(
+        shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     // Index
     indexMotor = new SparkFlex(ShooterConstants.Index.motorId, MotorType.kBrushless);
@@ -50,14 +55,16 @@ public class Shooter extends SubsystemBase {
     indexConfig.inverted(true);
     indexConfig.idleMode(IdleMode.kCoast);
     indexConfig.encoder.positionConversionFactor(0.7058823529411765);
-    
+
     // TODO: TEST!!!
     // indexConfig.closedLoop.allowedClosedLoopError(
     //     ShooterConstants.Index.allowedErrorRpm, ClosedLoopSlot.kSlot0);
-    indexConfig.closedLoop.pid(ShooterConstants.Index.pidP, ShooterConstants.Index.pidI, ShooterConstants.Index.pidD);
+    indexConfig.closedLoop.pid(
+        ShooterConstants.Index.pidP, ShooterConstants.Index.pidI, ShooterConstants.Index.pidD);
     indexConfig.closedLoop.feedForward.sv(ShooterConstants.Index.kS, ShooterConstants.Index.kV);
 
-    indexMotor.configure(indexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    indexMotor.configure(
+        indexConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     SmartDashboard.putNumber("Shooter/Shooter/Setpoint Override", 0.0);
     SmartDashboard.putNumber("Shooter/Index/Setpoint Override", 0.0);
@@ -96,7 +103,7 @@ public class Shooter extends SubsystemBase {
   public void applyShooterOverride(double rpm) {
     shooterClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
   }
-  
+
   public void applyIndexOverride(double rpm) {
     indexClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
   }
@@ -119,7 +126,7 @@ public class Shooter extends SubsystemBase {
     stopShooter();
     stopIndex();
   }
- 
+
   public double getSelectedShooterRpm() {
     return selectedShooterRpm;
   }
@@ -133,7 +140,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean shooterAtSetpoint() {
-    return Math.abs(getShooterVelocityRpm() - selectedShooterRpm) <= ShooterConstants.Shooter.allowedErrorRpm;
+    return Math.abs(getShooterVelocityRpm() - selectedShooterRpm)
+        <= ShooterConstants.Shooter.allowedErrorRpm;
   }
 
   public boolean indexReadyToSpin() {
@@ -142,7 +150,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean indexAtSetpoint() {
-    return Math.abs(getIndexVelocityRpm() - selectedIndexRpm) <= ShooterConstants.Index.allowedErrorRpm;
+    return Math.abs(getIndexVelocityRpm() - selectedIndexRpm)
+        <= ShooterConstants.Index.allowedErrorRpm;
   }
 
   public boolean isShooterRunning() {

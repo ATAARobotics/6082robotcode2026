@@ -57,43 +57,50 @@ public class RobotContainer {
 
     m_operatorController
         .a()
-        .onTrue(shooter.runOnce(() -> {
-          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointLowRpm);
-          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointLowRpm);
-        }));
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointLowRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointLowRpm);
+                }));
     m_operatorController
         .b()
-        .onTrue(shooter.runOnce(() -> {
-          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointMidRpm);
-          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointMidRpm);
-        }));
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointMidRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointMidRpm);
+                }));
     m_operatorController
         .x()
-        .onTrue(shooter.runOnce(() -> {
-          shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointHighRpm);
-          shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
-        }));
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointHighRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
+                }));
 
     BooleanSupplier triggerHeld = m_operatorController.rightTrigger();
     BooleanSupplier overrideHeld = m_operatorController.povUp();
 
-    Trigger indexShouldRun = new Trigger(() -> {
-      boolean trigger = triggerHeld.getAsBoolean();
-      boolean override = overrideHeld.getAsBoolean();
-      boolean ready = shooter.indexReadyToSpin();
+    Trigger indexShouldRun =
+        new Trigger(
+            () -> {
+              boolean trigger = triggerHeld.getAsBoolean();
+              boolean override = overrideHeld.getAsBoolean();
+              boolean ready = shooter.indexReadyToSpin();
 
-      if (!trigger) {
-        indexLatched = false;
-      } else if (ready) {
-        indexLatched = true;
-      }
-      return override || (trigger && indexLatched);
-    });
+              if (!trigger) {
+                indexLatched = false;
+              } else if (ready) {
+                indexLatched = true;
+              }
+              return override || (trigger && indexLatched);
+            });
 
-    Command spinUpShooter = Commands.startEnd(
-        shooter::applySelectedShooter, shooter::stopShooter, shooter);
-    Command runIndex = Commands.startEnd(
-        shooter::applySelectedIndex, shooter::stopIndex, shooter);
+    Command spinUpShooter =
+        Commands.startEnd(shooter::applySelectedShooter, shooter::stopShooter, shooter);
+    Command runIndex = Commands.startEnd(shooter::applySelectedIndex, shooter::stopIndex, shooter);
 
     new Trigger(triggerHeld).whileTrue(spinUpShooter);
     indexShouldRun.whileTrue(runIndex);
