@@ -112,13 +112,45 @@ tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
 
+// Install git hooks from .githooks/ into .git/hooks/ so teammates
+// automatically get the pre-commit hook on first build.
+tasks.register('installGitHooks') {
+    description = 'Installs git hooks from .githooks/ into .git/hooks/.'
+    group = 'build setup'
+
+    def hooksDir = file('.githooks')
+    def gitHooksDir = file('.git/hooks')
+
+    doLast {
+        if (!gitHooksDir.exists()) {
+            logger.lifecycle("Skipping git hook install: ${gitHooksDir} does not exist.")
+            return
+        }
+        fileTree(hooksDir).matching { include '**/*' }.each { src ->
+            if (src.isDirectory()) return
+                def dest = new File(gitHooksDir, src.name)
+            src.withInputStream { ins ->
+                dest.withOutputStream {
+                    it << ins
+                }
+            }
+            dest.setExecutable(true, false)
+            logger.lifecycle("Installed git hook: ${dest}")
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.named('build').configure { dependsOn 'installGitHooks' }
+}
+
 spotless {
     enforceCheck = false
 
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/bin/**', '**/util/LimelightHelpers.java'
+            exclude '**/build/**', '**/build-*/**', '**/bin/**', '**/util/LimelightHelpers.java', '**/.wt/**'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -129,7 +161,7 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/.wt/**'
         }
         greclipse()
         leadingTabsToSpaces(4)
@@ -139,7 +171,7 @@ spotless {
     format 'xml', {
         target fileTree('.') {
             include '**/*.xml'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/.wt/**'
         }
         eclipseWtp('xml')
         trimTrailingWhitespace()
@@ -149,7 +181,7 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/.wt/**'
         }
         trimTrailingWhitespace()
         leadingTabsToSpaces(2)
