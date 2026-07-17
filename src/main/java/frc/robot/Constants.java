@@ -63,4 +63,52 @@ public final class Constants {
     public static final Pose2d redStart2 = new Pose2d(0.0, 0.0, new Rotation2d());
     public static final Pose2d redStart3 = new Pose2d(0.0, 0.0, new Rotation2d());
   }
+
+  public static class ShooterConstants {
+    public static class Shooter {
+      public static final int motorId = 50;
+
+      public static final int smartCurrentLimitAmps = 40;
+
+      public static final double setpointLowRpm = 3000.0;
+      public static final double setpointMidRpm = 3660.0;
+      public static final double setpointHighRpm = 4100.0;
+
+      public static final double pidP = 0.0001;
+      public static final double pidI = 0.0;
+      public static final double pidD = 0.0;
+
+      public static final double kS = 0.2;
+      public static final double kV = 0.00173;
+
+      public static final double allowedErrorRpm = 29.0;
+
+      public static final double minOutput = -1.0;
+      public static final double maxOutput = 1.0;
+
+      public static final double indexSpinUpTimeoutSeconds = 3.0;
+    }
+
+    public static class Index {
+      public static final int motorId = 51;
+
+      public static final int smartCurrentLimitAmps = 40;
+
+      public static final double setpointLowRpm = 3000.0;
+      public static final double setpointMidRpm = 3660.0;
+      public static final double setpointHighRpm = 4100.0;
+
+      public static final double pidP = 0.0001;
+      public static final double pidI = 0.0;
+      public static final double pidD = 0.0;
+
+      public static final double kS = 0.15;
+      public static final double kV = 0.002;
+
+      public static final double allowedErrorRpm = 52.0;
+
+      public static final double minOutput = -1.0;
+      public static final double maxOutput = 1.0;
+    }
+  }
 }

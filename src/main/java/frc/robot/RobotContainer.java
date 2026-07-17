@@ -10,11 +10,16 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,6 +30,7 @@ import frc.robot.subsystems.Intake;
 public class RobotContainer {
   private final Drivetrain drivetrain = new Drivetrain();
   private final Intake intake = new Intake();
+  private final Shooter shooter = new Shooter();
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -32,6 +38,8 @@ public class RobotContainer {
       new CommandXboxController(OperatorConstants.operatorControllerPort);
 
   private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
+
+  private boolean indexLatched = false;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -49,7 +57,57 @@ public class RobotContainer {
             .arcadeDrive(() -> -m_driverController.getLeftY(), () -> m_driverController.getRightX())
             .beforeStarting(drivetrain::resetAccelerationLimiters));
 
+
     m_operatorController.leftTrigger().whileTrue(intake.runIntake());
+    m_operatorController
+        .a()
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointLowRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointLowRpm);
+                }));
+    m_operatorController
+        .b()
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointMidRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointMidRpm);
+                }));
+    m_operatorController
+        .x()
+        .onTrue(
+            shooter.runOnce(
+                () -> {
+                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointHighRpm);
+                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
+                }));
+
+    BooleanSupplier triggerHeld = m_operatorController.rightTrigger();
+    BooleanSupplier overrideHeld = m_operatorController.povUp();
+
+    Trigger indexShouldRun =
+        new Trigger(
+            () -> {
+              boolean trigger = triggerHeld.getAsBoolean();
+              boolean override = overrideHeld.getAsBoolean();
+              boolean ready = shooter.indexReadyToSpin();
+
+              if (!trigger) {
+                indexLatched = false;
+              } else if (ready) {
+                indexLatched = true;
+              }
+              return override || (trigger && indexLatched);
+            });
+
+    Command spinUpShooter =
+        Commands.startEnd(shooter::applySelectedShooter, shooter::stopShooter, shooter);
+    Command runIndex = Commands.startEnd(shooter::applySelectedIndex, shooter::stopIndex, shooter);
+
+    new Trigger(triggerHeld).whileTrue(spinUpShooter);
+    indexShouldRun.whileTrue(runIndex);
   }
 
   public Pose2d getStartPose() {
