@@ -57,7 +57,6 @@ public class RobotContainer {
             .arcadeDrive(() -> -m_driverController.getLeftY(), () -> m_driverController.getRightX())
             .beforeStarting(drivetrain::resetAccelerationLimiters));
 
-
     m_operatorController.leftTrigger().whileTrue(intake.runIntake());
     m_operatorController
         .a()
