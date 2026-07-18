@@ -158,6 +158,14 @@ public class Drivetrain extends SubsystemBase {
         );
     
     SmartDashboard.putData("Field", field);
+
+    SmartDashboard.putNumber("LeftPID/Left P", Constants.DrivetrainConstants.leftP);
+    SmartDashboard.putNumber("LeftPID/Left I", Constants.DrivetrainConstants.leftI);
+    SmartDashboard.putNumber("LeftPID/Left D", Constants.DrivetrainConstants.leftD);
+
+    SmartDashboard.putNumber("RightPID/Right P", Constants.DrivetrainConstants.rightP);
+    SmartDashboard.putNumber("RightPID/Right I", Constants.DrivetrainConstants.rightI);
+    SmartDashboard.putNumber("RightPID/Right D", Constants.DrivetrainConstants.rightD);
   }
 
   public Command arcadeDrive(DoubleSupplier speed, DoubleSupplier rotation) {
@@ -239,7 +247,7 @@ public class Drivetrain extends SubsystemBase {
         LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.VisionConstants.limelightName);
 
     poseEstimator.update(
-        pigeon.getRotation3d(), leftEncoder.getPosition(), -rightEncoder.getPosition());
+        pigeon.getRotation3d(), leftEncoder.getPosition(), rightEncoder.getPosition());
 
     if (!shouldRejectVisionUpdate(mt2)) {
       poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.2, 0.2, 9999999, 9999999));
@@ -262,6 +270,26 @@ public class Drivetrain extends SubsystemBase {
         field.getObject("path").setPoses(poses);
     });
 
+    SparkMaxConfig backLeftConfig = new SparkMaxConfig();
+    SparkMaxConfig backRightConfig = new SparkMaxConfig();
+
+    backLeftConfig.closedLoop.pid(
+        SmartDashboard.getNumber("LeftPID/Left P", Constants.DrivetrainConstants.leftP),
+        SmartDashboard.getNumber("LeftPID/Left I", Constants.DrivetrainConstants.leftI),
+        SmartDashboard.getNumber("LeftPID/Left D", Constants.DrivetrainConstants.leftD)
+    );
+
+    backRightConfig.closedLoop.pid(
+        SmartDashboard.getNumber("RightPID/Right P", Constants.DrivetrainConstants.rightP),
+        SmartDashboard.getNumber("RightPID/Right I", Constants.DrivetrainConstants.rightI),
+        SmartDashboard.getNumber("RightPID/Right D", Constants.DrivetrainConstants.rightD)
+    );
+
+    backLeft.configure(
+        backLeftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    backRight.configure(
+        backRightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);    
+
     SmartDashboard.putData("Field", field);
     SmartDashboard.putNumber("Drivetrain/X", currentPose.getX());
     SmartDashboard.putNumber("Drivetrain/Y", currentPose.getY());
@@ -272,7 +300,7 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber(
         "Drivetrain/Velocity", pigeon.getAngularVelocityZDevice().getValueAsDouble());
     SmartDashboard.putNumber("Drivetrain/LeftBackEncoder", leftEncoder.getPosition());
-    SmartDashboard.putNumber("Drivetrain/RightBackEncoder", -rightEncoder.getPosition());
+    SmartDashboard.putNumber("Drivetrain/RightBackEncoder", rightEncoder.getPosition());
   }
 
   @Override
