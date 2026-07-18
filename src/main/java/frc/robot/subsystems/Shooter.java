@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
@@ -101,10 +102,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public void applyShooterOverride(double rpm) {
+    selectedShooterRpm = rpm;
     shooterClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
   }
 
   public void applyIndexOverride(double rpm) {
+    selectedIndexRpm = rpm;
     indexClosedLoop.setSetpoint(rpm, ControlType.kVelocity);
   }
 
@@ -163,11 +166,11 @@ public class Shooter extends SubsystemBase {
   }
 
   private void applyShooterSetpoint() {
-    shooterClosedLoop.setSetpoint(selectedShooterRpm, ControlType.kVelocity);
+    // shooterClosedLoop.setSetpoint(selectedShooterRpm, ControlType.kVelocity);
   }
 
   private void applyIndexSetpoint() {
-    indexClosedLoop.setSetpoint(selectedIndexRpm, ControlType.kVelocity);
+    // indexClosedLoop.setSetpoint(selectedIndexRpm, ControlType.kVelocity);
   }
 
   @Override
@@ -197,4 +200,12 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {}
+
+  public Command runIndexerCommand(double speed) {
+    return run(() -> indexMotor.set(speed));
+  }
+
+  public Command runShooter(double speed) {
+    return run(() -> shooterMotor.set(speed));
+  }
 }

@@ -10,12 +10,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-/** Subsystem that runs the intake roller at a constant speed while commanded. */
-public class Intake extends SubsystemBase {
+// import frc.robot.Constants.JammerConstants;
+
+/** Subsystem that runs the Jammer roller at a constant speed while commanded. */
+public class Jammer extends SubsystemBase {
   private final SparkFlex motor;
 
-  public Intake() {
-    motor = new SparkFlex(Constants.IntakeConstants.intakeMotorId, MotorType.kBrushless);
+  public Jammer() {
+    motor =
+        new SparkFlex(
+            Constants.ShooterConstants.JammerConstants.jammerMotorId, MotorType.kBrushless);
 
     SparkFlexConfig config = new SparkFlexConfig();
     config.inverted(true);
@@ -23,7 +27,7 @@ public class Intake extends SubsystemBase {
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public Command runIntake(double speed) {
+  public Command runJammer(double speed) {
     return run(() -> motor.set(speed));
   }
 }

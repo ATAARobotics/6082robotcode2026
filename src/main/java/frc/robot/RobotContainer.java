@@ -10,16 +10,14 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Jammer;
 import frc.robot.subsystems.Shooter;
-import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -31,6 +29,7 @@ public class RobotContainer {
   private final Drivetrain drivetrain = new Drivetrain();
   private final Intake intake = new Intake();
   private final Shooter shooter = new Shooter();
+  private final Jammer jammer = new Jammer();
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -57,56 +56,34 @@ public class RobotContainer {
             .arcadeDrive(() -> -m_driverController.getLeftY(), () -> m_driverController.getRightX())
             .beforeStarting(drivetrain::resetAccelerationLimiters));
 
-    m_operatorController.leftTrigger().whileTrue(intake.runIntake());
     m_operatorController
-        .a()
-        .onTrue(
-            shooter.runOnce(
-                () -> {
-                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointLowRpm);
-                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointLowRpm);
-                }));
+        .leftTrigger()
+        .onTrue(intake.runIntake(Constants.IntakeConstants.intakeSpeed))
+        .onFalse(intake.runIntake(0));
+    // m_operatorController.rightTrigger().onTrue(shooter.runShooter(0.6)).onFalse(shooter.runShooter(0));
+    // m_operatorController.b().onTrue(shooter.runIndexerCommand(0.5)).onFalse(shooter.runIndexerCommand(0));
     m_operatorController
-        .b()
-        .onTrue(
-            shooter.runOnce(
-                () -> {
-                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointMidRpm);
-                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointMidRpm);
-                }));
+        .rightTrigger()
+        .onTrue(new InstantCommand(() -> shooter.applyIndexOverride(2000)))
+        .onFalse(new InstantCommand(() -> shooter.applyIndexOverride(-800)));
+    m_operatorController.rightBumper().onTrue(jammer.runJammer(0.4)).onFalse(jammer.runJammer(0.0));
+    m_operatorController.leftBumper().onTrue(jammer.runJammer(-0.8)).onFalse(jammer.runJammer(0.0));
     m_operatorController
-        .x()
-        .onTrue(
-            shooter.runOnce(
-                () -> {
-                  shooter.setSelectedShooterRpm(ShooterConstants.Shooter.setpointHighRpm);
-                  shooter.setSelectedIndexRpm(ShooterConstants.Index.setpointHighRpm);
-                }));
+        .povLeft()
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(3660)));
+    m_operatorController
+        .povRight()
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(4500)));
+    m_operatorController
+        .povUp()
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(4050)));
+    m_operatorController
+        .povDown()
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(1_000_000)));
+    m_operatorController.y().onTrue(new InstantCommand(() -> shooter.stopShooter()));
 
-    BooleanSupplier triggerHeld = m_operatorController.rightTrigger();
-    BooleanSupplier overrideHeld = m_operatorController.povUp();
-
-    Trigger indexShouldRun =
-        new Trigger(
-            () -> {
-              boolean trigger = triggerHeld.getAsBoolean();
-              boolean override = overrideHeld.getAsBoolean();
-              boolean ready = shooter.indexReadyToSpin();
-
-              if (!trigger) {
-                indexLatched = false;
-              } else if (ready) {
-                indexLatched = true;
-              }
-              return override || (trigger && indexLatched);
-            });
-
-    Command spinUpShooter =
-        Commands.startEnd(shooter::applySelectedShooter, shooter::stopShooter, shooter);
-    Command runIndex = Commands.startEnd(shooter::applySelectedIndex, shooter::stopIndex, shooter);
-
-    new Trigger(triggerHeld).whileTrue(spinUpShooter);
-    indexShouldRun.whileTrue(runIndex);
+    shooter.applyIndexOverride(-800);
+    shooter.applyShooterOverride(4050);
   }
 
   public Pose2d getStartPose() {
