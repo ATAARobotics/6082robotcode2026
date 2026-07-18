@@ -5,6 +5,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -39,7 +41,7 @@ public class RobotContainer {
   private final SendableChooser<Integer> m_startSlotChooser = new SendableChooser<>();
   private final SendableChooser<Command> autoChooser;
 
-  private boolean indexLatched = false;
+  // private boolean indexLatched = false;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -49,6 +51,11 @@ public class RobotContainer {
     SmartDashboard.putData("Start Slot", m_startSlotChooser);
 
     configureBindings();
+
+    NamedCommands.registerCommand("shooter", new InstantCommand(() -> {
+      shooter.applyShooterOverride(4000);
+      shooter.applyIndexOverride(2000);
+    }));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);

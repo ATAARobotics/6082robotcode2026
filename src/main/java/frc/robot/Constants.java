@@ -54,11 +54,11 @@ public final class Constants {
     // meters per second
     public static final double maxDriveSpeed = 3;
 
-    public static final double leftP = 0.1;
+    public static final double leftP = 0.3;
     public static final double leftI = 0;
     public static final double leftD = 0;
 
-    public static final double rightP = 0.1;
+    public static final double rightP = 0.3;
     public static final double rightI = 0;
     public static final double rightD = 0;
   }
@@ -132,6 +132,6 @@ public final class Constants {
       public static double speed = 0.5;
     }
   }
-  
+
   public static RobotConfig robotConfig;
 }
