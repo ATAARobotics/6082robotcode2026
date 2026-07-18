@@ -15,9 +15,9 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final int intakeMotorId = 15;
+    public static final int intakeMotorId = 52;
 
-    public static final double intakeSpeed = 0.6;
+    public static final double intakeSpeed = 0.25;
   }
 
   public static class DrivetrainConstants {
@@ -34,7 +34,7 @@ public final class Constants {
     public static final double driveCurveExponent = 3;
 
     // Maximum power for drive
-    public static final double driveMaxPower = 0.8;
+    public static final double driveMaxPower = 0.65;
 
     // Max acceleration per second for the turn limiter.
     public static final double turnMaxRatePerSec = 14.0;
@@ -109,6 +109,15 @@ public final class Constants {
 
       public static final double minOutput = -1.0;
       public static final double maxOutput = 1.0;
+    }
+
+    public static class JammerConstants {
+
+      public static final int jammerMotorId = 53;
+
+      public static final int smartCurrentLimitAmps = 40;
+
+      public static double speed = 0.5;
     }
   }
 }

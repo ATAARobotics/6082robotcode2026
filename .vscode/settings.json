@@ -65,7 +65,7 @@
   "spotlessGradle.diagnostics.enable": true,
   "spotlessGradle.format.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.spotlessGradle": true
+    "source.fixAll.spotlessGradle": "explicit"
   },
   "[java]": {
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle"
