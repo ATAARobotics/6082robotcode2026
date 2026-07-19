@@ -156,7 +156,7 @@ public class Drivetrain extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
         );
-    
+
     SmartDashboard.putData("Field", field);
 
     SmartDashboard.putNumber("LeftPID/Left P", Constants.DrivetrainConstants.leftP);
@@ -259,16 +259,18 @@ public class Drivetrain extends SubsystemBase {
     field.setRobotPose(currentPose.toPose2d());
 
     // Logging callback for target robot pose
-    PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-        // Do whatever you want with the pose here
-        field.getObject("target pose").setPose(pose);
-    });
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (pose) -> {
+          // Do whatever you want with the pose here
+          field.getObject("target pose").setPose(pose);
+        });
 
     // Logging callback for the active path, this is sent as a list of poses
-    PathPlannerLogging.setLogActivePathCallback((poses) -> {
-        // Do whatever you want with the poses here
-        field.getObject("path").setPoses(poses);
-    });
+    PathPlannerLogging.setLogActivePathCallback(
+        (poses) -> {
+          // Do whatever you want with the poses here
+          field.getObject("path").setPoses(poses);
+        });
 
     SparkMaxConfig backLeftConfig = new SparkMaxConfig();
     SparkMaxConfig backRightConfig = new SparkMaxConfig();
@@ -276,19 +278,17 @@ public class Drivetrain extends SubsystemBase {
     backLeftConfig.closedLoop.pid(
         SmartDashboard.getNumber("LeftPID/Left P", Constants.DrivetrainConstants.leftP),
         SmartDashboard.getNumber("LeftPID/Left I", Constants.DrivetrainConstants.leftI),
-        SmartDashboard.getNumber("LeftPID/Left D", Constants.DrivetrainConstants.leftD)
-    );
+        SmartDashboard.getNumber("LeftPID/Left D", Constants.DrivetrainConstants.leftD));
 
     backRightConfig.closedLoop.pid(
         SmartDashboard.getNumber("RightPID/Right P", Constants.DrivetrainConstants.rightP),
         SmartDashboard.getNumber("RightPID/Right I", Constants.DrivetrainConstants.rightI),
-        SmartDashboard.getNumber("RightPID/Right D", Constants.DrivetrainConstants.rightD)
-    );
+        SmartDashboard.getNumber("RightPID/Right D", Constants.DrivetrainConstants.rightD));
 
     backLeft.configure(
         backLeftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     backRight.configure(
-        backRightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);    
+        backRightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     SmartDashboard.putData("Field", field);
     SmartDashboard.putNumber("Drivetrain/X", currentPose.getX());

@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -52,10 +51,13 @@ public class RobotContainer {
 
     configureBindings();
 
-    NamedCommands.registerCommand("shooter", new InstantCommand(() -> {
-      shooter.applyShooterOverride(4000);
-      shooter.applyIndexOverride(2000);
-    }));
+    NamedCommands.registerCommand(
+        "shooter",
+        new InstantCommand(
+            () -> {
+              shooter.applyShooterOverride(4000);
+              shooter.applyIndexOverride(2000);
+            }));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -81,10 +83,10 @@ public class RobotContainer {
     m_operatorController.leftBumper().onTrue(jammer.runJammer(-0.8)).onFalse(jammer.runJammer(0.0));
     m_operatorController
         .povLeft()
-        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(3660)));
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(3800)));
     m_operatorController
         .povRight()
-        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(4500)));
+        .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(4750)));
     m_operatorController
         .povUp()
         .onTrue(new InstantCommand(() -> shooter.applyShooterOverride(4050)));
