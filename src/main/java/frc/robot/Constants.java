@@ -54,11 +54,11 @@ public final class Constants {
     // meters per second
     public static final double maxDriveSpeed = 3;
 
-    public static final double leftP = 0.42;
+    public static final double leftP = 0.48;
     public static final double leftI = 0;
     public static final double leftD = 0;
 
-    public static final double rightP = 0.42;
+    public static final double rightP = 0.48;
     public static final double rightI = 0;
     public static final double rightD = 0;
   }
